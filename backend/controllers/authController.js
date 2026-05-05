@@ -4,8 +4,18 @@ const { validationResult } = require('express-validator');
 
 // Generate JWT Token
 const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRE
+    // Check if JWT_SECRET exists
+    const secret = process.env.JWT_SECRET;
+
+    if (!secret) {
+        console.error('JWT_SECRET is not defined in environment variables');
+        throw new Error('JWT_SECRET is not configured. Please check your .env file');
+    }
+
+    console.log('Generating token with secret:', secret.substring(0, 10) + '...'); // Debug
+
+    return jwt.sign({ id }, secret, {
+        expiresIn: process.env.JWT_EXPIRE || '7d'
     });
 };
 
@@ -14,6 +24,8 @@ const generateToken = (id) => {
 // @access  Public
 const registerUser = async (req, res) => {
     try {
+        console.log('Registration attempt:', req.body.email); // Debug
+
         // Check for validation errors
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -55,10 +67,10 @@ const registerUser = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error(error);
+        console.error('Register error:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error'
+            message: error.message || 'Server error'
         });
     }
 };
@@ -68,6 +80,8 @@ const registerUser = async (req, res) => {
 // @access  Public
 const loginUser = async (req, res) => {
     try {
+        console.log('Login attempt:', req.body.email); // Debug
+
         // Check for validation errors
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -113,10 +127,10 @@ const loginUser = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error(error);
+        console.error('Login error:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error'
+            message: error.message || 'Server error'
         });
     }
 };

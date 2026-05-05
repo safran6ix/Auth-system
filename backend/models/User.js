@@ -34,7 +34,13 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     }
+}, {
+    // Add this to prevent automatic index creation issues
+    autoIndex: true
 });
+
+// Remove any existing username index
+userSchema.index({ email: 1 }, { unique: true });
 
 // Encrypt password using bcrypt
 userSchema.pre('save', async function (next) {
